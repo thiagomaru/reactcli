@@ -6,8 +6,8 @@ import { Input } from "../../components/Input";
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from "yup"
 import { useForm } from "react-hook-form";
-// import { useMemo } from "react-hook-form";
-import { Column, Container, CriarText, EsqueciText, Row, SubtitleLogin, Title, TitleLogin, Wrapper } from "./style"
+import { api } from '../../services/api';
+import { Column, Container, ErrorText, CriarText, EsqueciText, Row, SubtitleLogin, Title, TitleLogin, Wrapper } from "./style"
 
 const schema = yup.object({
     email: yup.string().email('email nao é valido').required(),
@@ -27,12 +27,19 @@ const Login = () => {
 
     console.log(isValid, errors)
 
-    const onSubmit = data => console.log(data);
+    const onSubmit = async formData => {
+      try{
+        const { data } = await api.get(`users?email=${formData.email}&senha=${formData.password}`)
+        if(data.length === 1){
+            navigate('/feed') 
+        } else {
+            alert('Email ou senha errado')
+        }
+      }catch{
+        alert('Houve um erro, tente novamente')
+      } 
+    };
 
-
-    const handleClickSignIn = () => {
-        navigate('/feed')
-    }
 
     return(<>
         <Header />
@@ -47,8 +54,8 @@ const Login = () => {
                     <TitleLogin>Faça seu cadastro</TitleLogin>
                     <SubtitleLogin>Faça seu login e make the change._</SubtitleLogin>
                     <form onSubmit={handleSubmit(onSubmit)}>
-                        <Input name="email" control={control} placeholder="email" leftIcon={<MdEmail />}/>
-                        <Input name="password" control={control} placeholder="senha" type="password" leftIcon={<MdLock />}/>
+                        <Input name="email" errorMessage={errors?.email?.message} control={control} placeholder="email" leftIcon={<MdEmail />}/>
+                        <Input name="password" errorMessage={errors?.password?.message} control={control}  placeholder="senha" type="password" leftIcon={<MdLock />}/>
                         <Button title="Entrar" variant="secondary" type="submit"/>
                     </form>
                     <Row>
